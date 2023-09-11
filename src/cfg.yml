@@ -1,0 +1,9 @@
+projects:
+- name: golang_base
+  docker_file: "/Users/linitpro/repos/local-cloud/src/default/Golang.Dockerfile"
+  docker_service_name: golang_base
+  home: .
+- name: db_dicts
+  docker_file: "/Users/linitpro/repos/local-cloud 2/DEV_Dockerfile"
+  docker_service_name: db_dicts
+  home: "/Users/linitpro/repos/db-dicts"
