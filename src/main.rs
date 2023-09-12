@@ -1,16 +1,15 @@
-use std::collections::HashMap;
 use std::io::Read;
 use std::process::{Command, Stdio};
+use actix_cors::Cors;
 use actix_web::{get, HttpResponse, patch, post};
-use bollard::container::ListContainersOptions;
-use bollard::Docker;
 use env_logger::Builder;
 use log::LevelFilter;
+use crate::models::get_services::{GetProjectsListRs, ProjectDto};
 use crate::services::config::{CloudSettings, get_settings};
 use crate::services::docker::run;
 
 pub mod models;
-mod services;
+pub mod services;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -20,12 +19,14 @@ async fn main() -> std::io::Result<()> {
         .init();
 
     actix_web::HttpServer::new(|| {
-        actix_web::App::new()
-            .service(get_services)
+        let cors = Cors::default()
+            .allow_any_origin().allow_any_method().allow_any_header()
+            .max_age(36000);
+        actix_web::App::new().wrap(cors)
             .service(get_cloud_projects)
             .service(get_cloud_republish_project)
     })
-        .bind(("127.0.0.1", 8080))?
+        .bind(("127.0.0.1", 8088))?
         .run()
         .await
 }
@@ -33,8 +34,18 @@ async fn main() -> std::io::Result<()> {
 #[get("/cloud/projects")]
 async fn get_cloud_projects() -> impl actix_web::Responder {
     let config = get_settings();
-
-    HttpResponse::Ok().content_type("application/json").body(serde_json::to_string(&config).unwrap())
+    let response = GetProjectsListRs {
+        projects: config.unwrap().projects.iter().map(|p| ProjectDto{
+            name: p.name.clone(),
+            docker_file: p.docker_file.clone(),
+            docker_container_name: p.docker_container_name.clone(),
+            docker_image_name: p.docker_image_name.clone(),
+            source_home: p.source_home.clone(),
+        }).collect()
+    };
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body(serde_json::to_string(&response).unwrap())
 }
 
 #[get("/cloud/projects/{name}/republish")]
@@ -43,17 +54,21 @@ async fn get_cloud_republish_project(path: actix_web::web::Path<(String)>) -> im
     let config = get_settings().unwrap();
     let project = config.projects.iter().find(|p| p.name == name).unwrap();
     // // docker build --tag baseimg --file Dockerfile .
-    let buildCommand = format!("docker build --tag {} --file {} .", project.docker_service_name, project.docker_file);
+    let buildCommand = format!("docker build --tag {} --file {} .", project.docker_image_name, project.docker_file);
     let mut child = Command::new("docker")
         .arg("build")
         .arg("--tag")
-        .arg(&project.docker_service_name)
+        .arg(&project.docker_image_name)
         .arg("--file")
         .arg(&project.docker_file)
-        .arg(&project.home)
+        .arg(&project.source_home)
         .stdout(Stdio::piped())
         .output().unwrap();
-    run(&project.docker_service_name, &project.docker_service_name).await;
+    if project.docker_container_name != None {
+        let containerName = project.docker_container_name.as_ref().unwrap();
+        run(containerName, &project.docker_image_name).await;
+    }
+
     let result = format!("status: {}\nout: {}\nerr: {}",
                          child.status,
                          String::from_utf8_lossy(&child.stdout),
@@ -81,14 +96,3 @@ async fn edit_project() -> impl actix_web::Responder {
     println!("the command exited with: {}", status.unwrap());
     HttpResponse::Ok().json("ok")
 }
-
-#[get("/docker/containers")]
-async fn get_services() -> impl actix_web::Responder {
-    HttpResponse::Ok().json("ok")
-}
-
-// build project
-
-/*
-
-*/

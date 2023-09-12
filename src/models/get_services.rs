@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use crate::services::config::Project;
 
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct GetProjectsListRs {
     pub projects: Vec<ProjectDto>,
 }
@@ -11,8 +12,10 @@ pub struct ProjectDto {
     pub name: String,
     #[serde(rename = "dockerFile")]
     pub docker_file: String,
-    #[serde(rename = "dockerServiceName")]
-    pub docker_service_name: String,
-    #[serde(rename = "home")]
-    pub home: String,
+    #[serde(rename = "dockerContainerName")]
+    pub docker_container_name: Option<String>,
+    #[serde(rename = "dockerImageName")]
+    pub docker_image_name: String,
+    #[serde(rename = "sourceHome")]
+    pub source_home: String,
 }

@@ -1,9 +1,16 @@
 projects:
 - name: golang_base
   docker_file: "/Users/linitpro/repos/local-cloud/src/default/Golang.Dockerfile"
-  docker_service_name: golang_base
-  home: .
+  # docker_container_name: golang_base # if not set, will skip container creation & running
+  docker_image_name: golang_base
+  source_home: .
+- name: nodejs_base
+  docker_file: "/Users/linitpro/repos/local-cloud/src/default/Nodejs.Dockerfile"
+  # docker_container_name: nodejs_base
+  docker_image_name: nodejs_base
+  source_home: .
 - name: db_dicts
   docker_file: "/Users/linitpro/repos/local-cloud 2/DEV_Dockerfile"
-  docker_service_name: db_dicts
-  home: "/Users/linitpro/repos/db-dicts"
+  docker_container_name: db_dicts
+  docker_image_name: db_dicts
+  source_home: "/Users/linitpro/repos/db-dicts"
