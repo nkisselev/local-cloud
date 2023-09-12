@@ -3,6 +3,7 @@ use std::process::{Command, Stdio};
 use bollard::container::{Config, CreateContainerOptions, ListContainersOptions};
 use bollard::Docker;
 use tokio_postgres::types::IsNull::No;
+use crate::services::config::Project;
 
 pub fn build() {
     println!("build docker.rs");
@@ -16,15 +17,25 @@ pub async fn run_web() {
 
 }
 
-pub async fn run(containerName: &str, imageName: &str) {
+pub async fn run(project : &Project) {
+    let containerName = &project.docker_container_name;
+    let imageName = &project.docker_image_name;
+    let  mut ports: Vec<String> = Vec::new();
+
+    if project.ports.is_some() {
+        for port in project.ports.as_ref().unwrap() {
+            ports.push("-p".to_string());
+            ports.push(format!("{}:{}", port.0, port.1));
+        }
+    }
+
     let mut child = Command::new("docker")
         .arg("run")
         .arg("-d")
-        .arg("-p")
-        .arg("8080:8080")
+        .args(ports)
         .arg("--name")
-        .arg(&containerName)
-        .arg(&containerName)
+        .arg(containerName.as_ref().unwrap())
+        .arg(&imageName)
         .stdout(Stdio::piped())
         .output().unwrap();
 

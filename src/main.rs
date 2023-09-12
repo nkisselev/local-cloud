@@ -5,7 +5,7 @@ use actix_web::{get, HttpResponse, patch, post};
 use env_logger::Builder;
 use log::LevelFilter;
 use crate::models::get_services::{GetProjectsListRs, ProjectDto};
-use crate::services::config::{CloudSettings, get_settings};
+use crate::services::config::{CloudSettings, get_settings, Project};
 use crate::services::docker::run;
 
 pub mod models;
@@ -13,6 +13,20 @@ pub mod services;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    /*let settings = CloudSettings{
+        projects: vec![
+            Project{
+                name: "ticker".to_string(),
+                docker_file: "Dockerfile".to_string(),
+                docker_container_name: Some("ticker".to_string()),
+                docker_image_name: "ticker".to_string(),
+                source_home: "/Users/linitpro/repos/Ticker/Ticker/bin/Debug/net7.0".to_string(),
+                ports: Some(vec![(8080, 8080)].into_iter().collect()),
+            }
+        ],
+    };
+    let yaml = serde_yaml::to_string(&settings).unwrap();
+     */
     Builder::new()
         .filter_level(LevelFilter::Info)
         .target(env_logger::Target::Stdout)
@@ -54,7 +68,6 @@ async fn get_cloud_republish_project(path: actix_web::web::Path<(String)>) -> im
     let config = get_settings().unwrap();
     let project = config.projects.iter().find(|p| p.name == name).unwrap();
     // // docker build --tag baseimg --file Dockerfile .
-    let buildCommand = format!("docker build --tag {} --file {} .", project.docker_image_name, project.docker_file);
     let mut child = Command::new("docker")
         .arg("build")
         .arg("--tag")
@@ -66,7 +79,7 @@ async fn get_cloud_republish_project(path: actix_web::web::Path<(String)>) -> im
         .output().unwrap();
     if project.docker_container_name != None {
         let containerName = project.docker_container_name.as_ref().unwrap();
-        run(containerName, &project.docker_image_name).await;
+        run(&project).await;
     }
 
     let result = format!("status: {}\nout: {}\nerr: {}",

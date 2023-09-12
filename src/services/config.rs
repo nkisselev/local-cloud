@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use std::io::Read;
+use std::iter::Map;
 use serde::{Deserialize, Serialize};
 use crate::models::result_code::ResultCode;
 
@@ -9,6 +11,7 @@ pub struct Project {
     pub docker_container_name: Option<String>,
     pub docker_image_name: String,
     pub source_home: String,
+    pub ports: Option<HashMap<i32, i32>>,
 }
 
 // Can be supported in the future

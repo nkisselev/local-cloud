@@ -48,6 +48,16 @@ axios.get('http://localhost:8088/cloud/projects')
   .catch((error) => {
     console.log(error)
   })
+
+const updateHosts = () => {
+  axios.get('http://localhost:8088/cloud/projects/updateHosts')
+    .then((response) => {
+      console.log(response)
+    })
+    .catch((error) => {
+      console.log(error)
+    })
+}
 </script>
 
 <template>
@@ -58,6 +68,14 @@ axios.get('http://localhost:8088/cloud/projects')
       :rows="data"
       row-key="name"
     >
+      <template v-slot:top-right>
+        <q-btn
+          color="primary"
+          @click="updateHosts"
+        >
+          Update hosts
+        </q-btn>
+      </template>
       <template v-slot:body-cell-actions="props">
         <td :props="props">
           <q-btn

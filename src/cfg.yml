@@ -4,11 +4,23 @@ projects:
   # docker_container_name: golang_base # if not set, will skip container creation & running
   docker_image_name: golang_base
   source_home: .
+- name: nginx80_base
+  docker_file: "/Users/linitpro/repos/local-cloud/src/default/nginx/Nginx80.Dockerfile"
+# docker_container_name: golang_base # if not set, will skip container creation & running
+  docker_image_name: nginx80_base
+  source_home: .
 - name: nodejs_base
   docker_file: "/Users/linitpro/repos/local-cloud/src/default/Nodejs.Dockerfile"
   # docker_container_name: nodejs_base
   docker_image_name: nodejs_base
   source_home: .
+- name: local_cloud_web
+  docker_file: "/Users/linitpro/repos/local-cloud/src/default/Localcloud.Dockerfile"
+  docker_container_name: local_cloud_web
+  docker_image_name: local_cloud_web
+  source_home: "/Users/linitpro/repos/local-cloud/src/local-cloud-web"
+  ports:
+    8090: 80
 - name: db_dicts
   docker_file: "/Users/linitpro/repos/local-cloud 2/DEV_Dockerfile"
   docker_container_name: db_dicts
