@@ -6,7 +6,7 @@ use crate::models::result_code::ResultCode;
 pub struct Project {
     pub name: String,
     pub docker_file: String,
-    pub docker_container_name: String,
+    pub docker_container_name: Option<String>,
     pub docker_image_name: String,
     pub source_home: String,
 }
